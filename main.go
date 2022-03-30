@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
+	"funstorm/owmhelper"
 	"log"
 	"os"
-	"w_bot/luntik/owmhelper"
 
 	w_bot "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
@@ -65,7 +65,7 @@ func HandleLocation(bot *w_bot.BotAPI, message *w_bot.Message) {
 	reply := w_bot.NewMessage(message.Chat.ID, "")
 
 	current_weather := owmhelper.CheckWeather(message.Location.Latitude, message.Location.Longitude)
-	reply.Text = fmt.Sprint(current_weather)
+	reply.Text = fmt.Sprintf("Температура: %.f по цельсию\nОщущается как: %.f \nВетер: %.2f м/c", current_weather.Main.Temp, current_weather.Main.FeelsLike, current_weather.Wind.Speed)
 	reply.ReplyMarkup = w_bot.NewRemoveKeyboard(true)
 	if _, err := bot.Send(reply); err != nil {
 		log.Panic(err)

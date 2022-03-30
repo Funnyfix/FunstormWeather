@@ -1,4 +1,4 @@
-module w_bot
+module funstorm
 
 go 1.17
 

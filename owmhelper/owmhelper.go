@@ -23,5 +23,6 @@ func CheckWeather(lat, long float64) *owm.CurrentWeatherData {
 			Latitude:  lat,
 		},
 	)
+	log.Println(w)
 	return w
 }
