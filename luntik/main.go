@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"w_bot/luntik/owmhelper"
 
 	w_bot "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
@@ -63,7 +64,8 @@ func HandleCommand(bot *w_bot.BotAPI, message *w_bot.Message) {
 func HandleLocation(bot *w_bot.BotAPI, message *w_bot.Message) {
 	reply := w_bot.NewMessage(message.Chat.ID, "")
 
-	reply.Text = fmt.Sprintf("Latitude: %f Longitude: %f", message.Location.Latitude, message.Location.Longitude)
+	current_weather := owmhelper.CheckWeather(message.Location.Latitude, message.Location.Longitude)
+	reply.Text = fmt.Sprint(current_weather)
 	reply.ReplyMarkup = w_bot.NewRemoveKeyboard(true)
 	if _, err := bot.Send(reply); err != nil {
 		log.Panic(err)
