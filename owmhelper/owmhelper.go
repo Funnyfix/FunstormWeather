@@ -1,6 +1,7 @@
 package owmhelper
 
 import (
+	"fmt"
 	"log"
 	"os"
 
@@ -15,7 +16,7 @@ func Connect() *owm.CurrentWeatherData {
 	return w
 }
 
-func CheckWeather(lat, long float64) *owm.CurrentWeatherData {
+func CurrentWeatherByCoordinates(lat, long float64) *owm.CurrentWeatherData {
 	w := Connect()
 	w.CurrentByCoordinates(
 		&owm.Coordinates{
@@ -25,4 +26,19 @@ func CheckWeather(lat, long float64) *owm.CurrentWeatherData {
 	)
 	log.Println(w)
 	return w
+}
+
+func CurrentWeatherByName(place string) *owm.CurrentWeatherData {
+	w := Connect()
+	w.CurrentByName(place)
+	log.Println(w)
+	return w
+}
+
+func ParseWeather(data *owm.CurrentWeatherData) string {
+	if len(data.Weather) == 0 {
+		return "Неопознаная локация"
+	}
+	text := fmt.Sprintf("На улице %s \nТемпература: %.f℃ \nОщущается как: %.f℃ \nВетер: %.2f м/c", data.Weather[0].Description, data.Main.Temp, data.Main.FeelsLike, data.Wind.Speed)
+	return text
 }
