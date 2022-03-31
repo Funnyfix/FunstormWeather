@@ -88,7 +88,7 @@ func HandlePlace(bot *w_bot.BotAPI, message *w_bot.Message) {
 	parsed_text = strings.TrimPrefix(parsed_text, " ")
 	log.Println(parsed_text)
 	if len(parsed_text) == 0 {
-		text := "Введите город \nПример: /city Воронеж"
+		text := "Введите город \nПример: `/city Воронеж`"
 		Answer(bot, message.Chat.ID, text)
 		return
 	}
@@ -102,6 +102,7 @@ func Answer(bot *w_bot.BotAPI, chatid int64, text string) {
 	reply := w_bot.NewMessage(chatid, "")
 	reply.Text = text
 	reply.ReplyMarkup = w_bot.NewRemoveKeyboard(true)
+	reply.ParseMode = "MarkdownV2"
 	if _, err := bot.Send(reply); err != nil {
 		log.Panic(err)
 	}
