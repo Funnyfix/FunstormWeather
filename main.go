@@ -88,7 +88,7 @@ func HandlePlace(bot *w_bot.BotAPI, message *w_bot.Message) {
 	parsed_text = strings.TrimPrefix(parsed_text, " ")
 	log.Println(parsed_text)
 	if len(parsed_text) == 0 {
-		text := "Введите город"
+		text := "Введите город \nПример: /city Воронеж"
 		Answer(bot, message.Chat.ID, text)
 		return
 	}
