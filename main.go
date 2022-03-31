@@ -48,9 +48,9 @@ func HandleCommand(bot *w_bot.BotAPI, message *w_bot.Message) {
 	// Create a new MessageConfig. We don't have text yet,
 	// so we leave it empty.
 	reply := w_bot.NewMessage(message.Chat.ID, "")
-	reply.ParseMode = "MarkdownV2"
-	helptext := "`/geo` — Current weather in your location\n" +
-		"`/city Your city` — Current weather in selected city "
+	reply.ParseMode = "HTML"
+	helptext := "<code>/geo</code> - Current weather in your location\n" +
+		"<code>/city Your city</code> - Current weather in selected city "
 
 	// Extract the command from the Message.
 	switch message.Command() {
@@ -88,7 +88,7 @@ func HandlePlace(bot *w_bot.BotAPI, message *w_bot.Message) {
 	parsed_text = strings.TrimPrefix(parsed_text, " ")
 	log.Println(parsed_text)
 	if len(parsed_text) == 0 {
-		text := "Введите город \nПример: `/city Воронеж`"
+		text := "Введите город \nПример: <code>/city Воронеж</code>"
 		Answer(bot, message.Chat.ID, text)
 		return
 	}
@@ -102,7 +102,7 @@ func Answer(bot *w_bot.BotAPI, chatid int64, text string) {
 	reply := w_bot.NewMessage(chatid, "")
 	reply.Text = text
 	reply.ReplyMarkup = w_bot.NewRemoveKeyboard(true)
-	reply.ParseMode = "MarkdownV2"
+	reply.ParseMode = "HTML"
 	if _, err := bot.Send(reply); err != nil {
 		log.Panic(err)
 	}
