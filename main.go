@@ -1,10 +1,10 @@
 package main
 
 import (
-	"fmt"
 	"funstorm/owmhelper"
 	"log"
 	"os"
+	"strings"
 
 	w_bot "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
@@ -43,29 +43,64 @@ func main() {
 		}
 	}
 }
+
 func HandleCommand(bot *w_bot.BotAPI, message *w_bot.Message) {
 	// Create a new MessageConfig. We don't have text yet,
 	// so we leave it empty.
 	reply := w_bot.NewMessage(message.Chat.ID, "")
+	reply.ParseMode = "MarkdownV2"
+	helptext := "`/geo` — Current weather in your location\n" +
+		"`/city Your city` — Current weather in selected city "
 
 	// Extract the command from the Message.
 	switch message.Command() {
-	case "weather":
+	case "start":
+		reply.Text = "Hello, i am dumb ass bot for now please type my functions:\n" + helptext
+
+	case "geo":
 		reply.Text = "Home boy please give your location"
 		reply.ReplyMarkup = userkeyboard
+	case "help":
+		reply.Text = helptext
+	case "city":
+		HandlePlace(bot, message)
+
 	default:
 		reply.Text = "I don't know that command"
 	}
-
-	if _, err := bot.Send(reply); err != nil {
-		log.Panic(err)
+	if reply.Text != "" {
+		if _, err := bot.Send(reply); err != nil {
+			log.Panic(err)
+		}
 	}
 }
-func HandleLocation(bot *w_bot.BotAPI, message *w_bot.Message) {
-	reply := w_bot.NewMessage(message.Chat.ID, "")
 
-	current_weather := owmhelper.CheckWeather(message.Location.Latitude, message.Location.Longitude)
-	reply.Text = fmt.Sprintf("Температура: %.f по цельсию\nОщущается как: %.f \nВетер: %.2f м/c", current_weather.Main.Temp, current_weather.Main.FeelsLike, current_weather.Wind.Speed)
+func HandleLocation(bot *w_bot.BotAPI, message *w_bot.Message) {
+
+	current_weather := owmhelper.CurrentWeatherByCoordinates(message.Location.Latitude, message.Location.Longitude)
+	text := owmhelper.ParseWeather(current_weather)
+	Answer(bot, message.Chat.ID, text)
+
+}
+
+func HandlePlace(bot *w_bot.BotAPI, message *w_bot.Message) {
+	var parsed_text = strings.TrimPrefix(message.Text, "/city")
+	parsed_text = strings.TrimPrefix(parsed_text, " ")
+	log.Println(parsed_text)
+	if len(parsed_text) == 0 {
+		text := "Введите город"
+		Answer(bot, message.Chat.ID, text)
+		return
+	}
+	current_weather := owmhelper.CurrentWeatherByName(parsed_text)
+	text := owmhelper.ParseWeather(current_weather)
+	Answer(bot, message.Chat.ID, text)
+
+}
+
+func Answer(bot *w_bot.BotAPI, chatid int64, text string) {
+	reply := w_bot.NewMessage(chatid, "")
+	reply.Text = text
 	reply.ReplyMarkup = w_bot.NewRemoveKeyboard(true)
 	if _, err := bot.Send(reply); err != nil {
 		log.Panic(err)
