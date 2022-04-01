@@ -39,6 +39,8 @@ func ParseWeather(data *owm.CurrentWeatherData) string {
 	if len(data.Weather) == 0 {
 		return "Неопознаная локация"
 	}
-	text := fmt.Sprintf("На улице %s \nТемпература: %.f℃ \nОщущается как: %.f℃ \nВетер: %.2f м/c", data.Weather[0].Description, data.Main.Temp, data.Main.FeelsLike, data.Wind.Speed)
+	maintemp := int(data.Main.Temp)
+	feelslike := int(data.Main.FeelsLike)
+	text := fmt.Sprintf("На улице %s \nТемпература: %d℃ \nОщущается как: %d℃ \nВетер: %.2f м/c", data.Weather[0].Description, maintemp, feelslike, data.Wind.Speed)
 	return text
 }
