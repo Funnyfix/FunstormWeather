@@ -14,12 +14,10 @@ var userkeyboard = w_bot.NewReplyKeyboard(
 		w_bot.NewKeyboardButtonLocation("Your Geo"),
 	),
 )
+var bot *w_bot.BotAPI
 
 func main() {
-	bot, err := w_bot.NewBotAPI(os.Getenv("FUNSTORM_BOT_TOKEN"))
-	if err != nil {
-		log.Panic(err)
-	}
+	IntializeBot()
 
 	bot.Debug = true
 
@@ -36,15 +34,24 @@ func main() {
 		}
 
 		if update.Message.IsCommand() { // ignore any non-command Messages
-			HandleCommand(bot, update.Message)
+			HandleCommand(update.Message)
 		}
 		if update.Message.Location != nil {
-			HandleLocation(bot, update.Message)
+			HandleLocation(update.Message)
 		}
 	}
 }
 
-func HandleCommand(bot *w_bot.BotAPI, message *w_bot.Message) {
+func IntializeBot() {
+	token := os.Getenv("FUNSTORM_BOT_TOKEN")
+	client, err := w_bot.NewBotAPI(token)
+	if err != nil {
+		log.Panic(err)
+	}
+	bot = client
+}
+
+func HandleCommand(message *w_bot.Message) {
 	// Create a new MessageConfig. We don't have text yet,
 	// so we leave it empty.
 	reply := w_bot.NewMessage(message.Chat.ID, "")
@@ -63,7 +70,7 @@ func HandleCommand(bot *w_bot.BotAPI, message *w_bot.Message) {
 	case "help":
 		reply.Text = helptext
 	case "city":
-		HandlePlace(bot, message)
+		HandlePlace(message)
 
 	default:
 		reply.Text = "I don't know that command"
@@ -75,30 +82,30 @@ func HandleCommand(bot *w_bot.BotAPI, message *w_bot.Message) {
 	}
 }
 
-func HandleLocation(bot *w_bot.BotAPI, message *w_bot.Message) {
+func HandleLocation(message *w_bot.Message) {
 
 	current_weather := owmhelper.CurrentWeatherByCoordinates(message.Location.Latitude, message.Location.Longitude)
 	text := owmhelper.ParseWeather(current_weather)
-	Answer(bot, message.Chat.ID, text)
+	Answer(message.Chat.ID, text)
 
 }
 
-func HandlePlace(bot *w_bot.BotAPI, message *w_bot.Message) {
+func HandlePlace(message *w_bot.Message) {
 	var parsed_text = strings.TrimPrefix(message.Text, "/city")
 	parsed_text = strings.TrimPrefix(parsed_text, " ")
 	log.Println(parsed_text)
 	if len(parsed_text) == 0 {
 		text := "Введите город \nПример: <code>/city Воронеж</code>"
-		Answer(bot, message.Chat.ID, text)
+		Answer(message.Chat.ID, text)
 		return
 	}
 	current_weather := owmhelper.CurrentWeatherByName(parsed_text)
 	text := owmhelper.ParseWeather(current_weather)
-	Answer(bot, message.Chat.ID, text)
+	Answer(message.Chat.ID, text)
 
 }
 
-func Answer(bot *w_bot.BotAPI, chatid int64, text string) {
+func Answer(chatid int64, text string) {
 	reply := w_bot.NewMessage(chatid, "")
 	reply.Text = text
 	reply.ReplyMarkup = w_bot.NewRemoveKeyboard(true)
