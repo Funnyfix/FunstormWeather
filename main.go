@@ -35,9 +35,15 @@ func main() {
 
 		if update.Message.IsCommand() { // ignore any non-command Messages
 			HandleCommand(update.Message)
+			continue
 		}
 		if update.Message.Location != nil {
 			HandleLocation(update.Message)
+			continue
+		}
+		if update.Message.Text != "" {
+			HandlePlace(update.Message)
+			continue
 		}
 	}
 }
@@ -57,7 +63,8 @@ func HandleCommand(message *w_bot.Message) {
 	reply := w_bot.NewMessage(message.Chat.ID, "")
 	reply.ParseMode = "HTML"
 	helptext := "<code>/geo</code> - Current weather in your location\n" +
-		"<code>/city Your city</code> - Current weather in selected city "
+		"<code>/city Your city</code> - Current weather in selected city\n" +
+		"You can also type any place without command"
 
 	// Extract the command from the Message.
 	switch message.Command() {
@@ -95,7 +102,7 @@ func HandlePlace(message *w_bot.Message) {
 	parsed_text = strings.TrimPrefix(parsed_text, " ")
 	log.Println(parsed_text)
 	if len(parsed_text) == 0 {
-		text := "Введите город \nПример: <code>/city Воронеж</code>"
+		text := "Enter place \nExample: <code>/city Воронеж</code>"
 		Answer(message.Chat.ID, text)
 		return
 	}

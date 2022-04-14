@@ -9,7 +9,7 @@ import (
 )
 
 func Connect() *owm.CurrentWeatherData {
-	w, err := owm.NewCurrent("C", "ru", os.Getenv("OWM_API_KEY"))
+	w, err := owm.NewCurrent("C", "en", os.Getenv("OWM_API_KEY"))
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -37,10 +37,10 @@ func CurrentWeatherByName(place string) *owm.CurrentWeatherData {
 
 func ParseWeather(data *owm.CurrentWeatherData) string {
 	if len(data.Weather) == 0 {
-		return "Неопознаная локация"
+		return "Unknown location"
 	}
 	maintemp := int(data.Main.Temp)
 	feelslike := int(data.Main.FeelsLike)
-	text := fmt.Sprintf("На улице %s \nТемпература: %d℃ \nОщущается как: %d℃ \nВетер: %.2f м/c", data.Weather[0].Description, maintemp, feelslike, data.Wind.Speed)
+	text := fmt.Sprintf("It's %s outside \nTemperature: %d℃ \nFeels like: %d℃ \nWind speed: %.2f m/s", data.Weather[0].Description, maintemp, feelslike, data.Wind.Speed)
 	return text
 }
