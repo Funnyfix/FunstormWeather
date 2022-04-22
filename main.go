@@ -2,6 +2,8 @@ package main
 
 import (
 	"database/sql"
+	"errors"
+	"fmt"
 	"funstorm/owmhelper"
 	w_bot "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	_ "github.com/mattn/go-sqlite3"
@@ -147,6 +149,7 @@ func HandleSubscibe(message *w_bot.Message) {
 		Answer(message.Chat.ID, text)
 		return
 	}
+	Answer(message.Chat.ID, fmt.Sprintf("Subscription added for %s", parsedPlace))
 }
 
 func ParseSubscribe(text string) (time.Time, string, error) {
@@ -157,6 +160,11 @@ func ParseSubscribe(text string) (time.Time, string, error) {
 	if err != nil {
 		return *new(time.Time), "", err
 	}
+	var result = owmhelper.CurrentWeatherByName(parsed_city)
+	if owmhelper.ParseWeather(result) == "Unknown location" {
+		return *new(time.Time), "", errors.New("Unknown location")
+	}
+	subtime = subtime.Add(time.Second * time.Duration(-result.Timezone))
 	return subtime, parsed_city, nil
 }
 

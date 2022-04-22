@@ -2,7 +2,6 @@ package main
 
 import (
 	"testing"
-	"time"
 )
 
 func TestParsing(t *testing.T) {
@@ -10,11 +9,15 @@ func TestParsing(t *testing.T) {
 	t.Log(time, place, err)
 }
 func TestSqlAdd(t *testing.T) {
+	time, place, _ := ParseSubscribe("09:00 Sydney")
 	testSub := subscription{
 		chatId: 0,
-		time:   time.Now(),
-		city:   "Moscow",
+		time:   time,
+		city:   place,
 	}
 	err := sqlAddSubscription(testSub)
-	t.Log(err)
+	if err != nil {
+		t.Error(err)
+	}
+
 }

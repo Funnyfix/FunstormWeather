@@ -2,10 +2,9 @@ package owmhelper
 
 import (
 	"fmt"
+	owm "github.com/briandowns/openweathermap"
 	"log"
 	"os"
-
-	owm "github.com/briandowns/openweathermap"
 )
 
 var icons = map[string]string{
