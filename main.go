@@ -1,13 +1,22 @@
 package main
 
 import (
+	"database/sql"
 	"funstorm/owmhelper"
 	"log"
 	"os"
 	"strings"
+	"time"
 
 	w_bot "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
+
+type subscription struct {
+	id     int
+	chatId int64
+	time   time.Time
+	city   string
+}
 
 var userkeyboard = w_bot.NewReplyKeyboard(
 	w_bot.NewKeyboardButtonRow(
@@ -64,6 +73,7 @@ func HandleCommand(message *w_bot.Message) {
 	reply.ParseMode = "HTML"
 	helptext := "<code>/geo</code> - Current weather in your location\n" +
 		"<code>/city Your city</code> - Current weather in selected city\n" +
+		"<code>/subscribe HH:mm Your city</code> - Your daily weather subscribtion\n" +
 		"You can also type any place without command"
 
 	// Extract the command from the Message.
@@ -78,6 +88,8 @@ func HandleCommand(message *w_bot.Message) {
 		reply.Text = helptext
 	case "city":
 		HandlePlace(message)
+		//	case "subscribe":
+		//		HandleForecast(message)
 
 	default:
 		reply.Text = "I don't know that command"
@@ -112,6 +124,42 @@ func HandlePlace(message *w_bot.Message) {
 
 }
 
+func HandleSubscibe(message *w_bot.Message) {
+	var parsed_text = strings.TrimPrefix(message.Text, "/subscribe")
+	parsed_text = strings.TrimPrefix(parsed_text, " ")
+	log.Println(parsed_text)
+	if len(parsed_text) < 7 {
+		text := "Enter your time and city \nExample: <code>/subscribe 10:00 Воронеж</code>"
+		Answer(message.Chat.ID, text)
+		return
+	}
+
+	parsedTime, parsedPlace, err := ParseSubscribe(parsed_text)
+	if err != nil {
+		text := "Enter your time and city \nExample: <code>/subscribe 10:00 Воронеж</code>"
+		Answer(message.Chat.ID, text)
+		return
+	}
+	subscribeData := subscription{chatId: message.Chat.ID, time: parsedTime, city: parsedPlace}
+	err2 := sqlAddSubscription(subscribeData)
+	if err2 != nil {
+		text := err2.Error()
+		Answer(message.Chat.ID, text)
+		return
+	}
+}
+
+func ParseSubscribe(text string) (time.Time, string, error) {
+	parsed_time := strings.TrimSuffix(text[:5], " ")
+	parsed_city := strings.TrimPrefix(text[5:], " ")
+	const layout = "15:04"
+	subtime, err := time.Parse(layout, parsed_time)
+	if err != nil {
+		return *new(time.Time), "", err
+	}
+	return subtime, parsed_city, nil
+}
+
 func Answer(chatid int64, text string) {
 	reply := w_bot.NewMessage(chatid, "")
 	reply.Text = text
@@ -120,4 +168,14 @@ func Answer(chatid int64, text string) {
 	if _, err := bot.Send(reply); err != nil {
 		log.Panic(err)
 	}
+}
+
+func sqlAddSubscription(data subscription) error {
+	db, err := sql.Open("sqlite3", "subscribe.db")
+	if err != nil {
+		log.Panic(err)
+	}
+	_, err = db.Exec("insert into subscriptions (chatId, time, city) values (?,?,?)", data.chatId, data.time, data.city)
+	db.Close()
+	return err
 }
