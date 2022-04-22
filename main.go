@@ -3,12 +3,12 @@ package main
 import (
 	"database/sql"
 	"funstorm/owmhelper"
+	w_bot "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	_ "github.com/mattn/go-sqlite3"
 	"log"
 	"os"
 	"strings"
 	"time"
-
-	w_bot "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
 type subscription struct {
